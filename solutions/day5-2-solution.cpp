@@ -67,7 +67,7 @@ std::array<int,3> get_crate_move_details(std::string line) {
 
 int main() {
     std::ifstream file;
-    file.open("day5-input.txt", std::ios::in);
+    file.open("input/day5-input.txt", std::ios::in);
 
     std::vector<std::vector<char>> stacks;
     int num_of_stacks = get_number_of_stacks(&file);

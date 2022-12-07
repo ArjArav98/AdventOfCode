@@ -17,7 +17,7 @@ char get_character(std::ifstream *file) {
 
 int main() {
     std::ifstream file;
-    file.open("day6-input.txt", std::ios::in);
+    file.open("input/day6-input.txt", std::ios::in);
 
     int length_of_input = get_length_of_input(&file);
     int index=0;

@@ -24,7 +24,7 @@ int get_number_for_character(char character) {
 
 int main() {
     std::ifstream file;
-    file.open("day3-1-input.txt", std::ios::in);
+    file.open("input/day3-1-input.txt", std::ios::in);
 
     int total = 0;
 

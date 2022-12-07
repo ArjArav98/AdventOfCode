@@ -47,7 +47,7 @@ int calculate_round_score (char player2_sign, BattleResult result) {
 int main() {
     
     std::ifstream file;
-    file.open("day2-1-input.txt", std::ios::in);
+    file.open("input/day2-1-input.txt", std::ios::in);
 
     long total_score = 0;
     long last_score = 0;

@@ -6,7 +6,7 @@
 
 int main() {
     std::ifstream file;
-    file.open("day1-1-input.txt", std::ios::in);
+    file.open("input/day1-1-input.txt", std::ios::in);
 
     std::vector<long> totals;
     long total = 0;

@@ -16,7 +16,7 @@ bool one_range_contains_the_other(Range r1, Range r2) {
 
 int main() {
     std::ifstream file;
-    file.open("day4-1-input.txt", std::ios::in);
+    file.open("input/day4-1-input.txt", std::ios::in);
 
     int ranges_which_contain_other_ranges = 0;
 

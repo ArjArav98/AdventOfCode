@@ -138,7 +138,7 @@ class Directory {
 
 int main() {
     std::ifstream file;
-    file.open("day7-input.txt", std::ios::in);
+    file.open("input/day7-input.txt", std::ios::in);
 
     Directory root("/", nullptr);
     Directory *current_dir = &root;
