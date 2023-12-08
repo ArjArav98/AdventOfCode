@@ -2,15 +2,23 @@
 #ifndef INCLUDE_AOC_H_ // NOLINT
 #define INCLUDE_AOC_H_
 
-#include<vector>
+#include<map>
+#include<set>
 #include<string>
+#include<vector>
 
 namespace std {
 
 template <typename A>
 std::ostream& operator<<(std::ostream& out, std::vector<A> vec);
 
-}
+template <typename A>
+std::ostream& operator<<(std::ostream& out, std::set<A> set);
+
+template <typename A, typename B>
+std::ostream& operator<<(std::ostream& out, std::map<A, B> map);
+
+};  // namespace std
 
 namespace aoc {
 
@@ -19,7 +27,7 @@ class Coord;
 std::vector<std::string> split(std::string str, std::string delimiter);
 std::ostream& operator<<(std::ostream& out, const Coord coord);
 
-};
+};  // namespace aoc
 
 /* ----------------- */
 /* -- DEFINITIONS -- */
@@ -28,12 +36,23 @@ std::ostream& operator<<(std::ostream& out, const Coord coord);
 template <typename A>
 std::ostream& std::operator<<(std::ostream& out, std::vector<A> vec) {
     out << "[";
-    for (auto it = vec.begin(); it != vec.end(); it++) {
-        if (it == (vec.end() - 1)) out << *it;
-        else
-            out << *it << ", ";
-    }
-    return out << "]";
+    for (auto element : vec) out << element << ", ";
+    return out << "\b\b]";
+}
+
+template <typename A>
+std::ostream& std::operator<<(std::ostream& out, std::set<A> set) {
+    out << "{";
+    for (auto element : set) out << element << ", ";
+    return out << "\b\b}";
+}
+
+template <typename A, typename B>
+std::ostream& std::operator<<(std::ostream& out, std::map<A, B> map) {
+    out << "{";
+    for (auto element : map)
+        out << element.first << ": " << element.second << ", ";
+    return out << "\b\b}";
 }
 
 std::vector<std::string> aoc::split(std::string str, std::string delimiter) {
