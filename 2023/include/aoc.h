@@ -37,14 +37,14 @@ template <typename A>
 std::ostream& std::operator<<(std::ostream& out, std::vector<A> vec) {
     out << "[";
     for (auto element : vec) out << element << ", ";
-    return out << "\b\b]";
+    return out << "\b]";
 }
 
 template <typename A>
 std::ostream& std::operator<<(std::ostream& out, std::set<A> set) {
     out << "{";
     for (auto element : set) out << element << ", ";
-    return out << "\b\b}";
+    return out << "\b}";
 }
 
 template <typename A, typename B>
@@ -52,7 +52,7 @@ std::ostream& std::operator<<(std::ostream& out, std::map<A, B> map) {
     out << "{";
     for (auto element : map)
         out << element.first << ": " << element.second << ", ";
-    return out << "\b\b}";
+    return out << "\b}";
 }
 
 std::vector<std::string> aoc::split(std::string str, std::string delimiter) {
