@@ -27,6 +27,7 @@ int main(void) {
         int args_assigned = sscanf(line, "%ld %ld", &first_list[lines_read], &second_list[lines_read]);
         if (args_assigned != 2) {
             fprintf(stderr, "%s was not able to be read properly.\n", line);
+            fclose(input_file);
             return EXIT_FAILURE;
         }
     }
@@ -40,5 +41,7 @@ int main(void) {
 
     printf("%d lines read!\n", lines_read);
     printf("%ld\n", distance_total);
+
+    fclose(input_file);
     return EXIT_SUCCESS;
 }
