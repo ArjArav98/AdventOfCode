@@ -236,8 +236,10 @@ int main(void) {
             }
         }
 
-        // We determine which page updates are correctly ordered
-        // by checking if both arrays are equal
+        // We determine which page updates are NOT CORRECTLY ORDERED
+        // by checking if both arrays are inequal
+        // If they are NOT EQUAL, we need the middle element of the correctly
+        // ordered list WHICH WE ALREADY HAVE - the ordered_page_numbers array.
         size_t ordered_page_numbers_true_size = ordered_page_numbers_get_true_size(
             ordered_page_numbers,
             nnumbers
@@ -253,9 +255,9 @@ int main(void) {
                 }
             }
 
-            if (is_equal) {
-                const size_t middle_element = (page_update_list_size / 2);
-                middle_number_sum += page_update_list[middle_element];
+            if (is_equal == false) {
+                const size_t middle_element = (ordered_page_numbers_true_size/ 2);
+                middle_number_sum += ordered_page_numbers[middle_element];
             }
         }
 
