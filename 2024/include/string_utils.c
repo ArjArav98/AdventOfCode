@@ -59,3 +59,12 @@ void string_list_to_num_list(
         num_list[index] = strtol(string_list + (index * string_list_elem_size), NULL, 10);
     }
 }
+
+void string_list_print(
+    const char* const strings,
+    size_t string_list_elem_size,
+    size_t nstrings
+) {
+    for (int i=0; i<nstrings; i++) printf("%s ", strings + (string_list_elem_size * i));
+    printf("\n");
+}

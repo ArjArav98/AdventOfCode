@@ -14,5 +14,10 @@ void string_list_to_num_list(
     int nstring_list_elements,
     size_t string_list_elem_size
 );
+void string_list_print(
+    const char* const strings,
+    size_t string_list_elem_size,
+    size_t nstrings
+);
 
 #endif /* STRINGUTILS_H */
