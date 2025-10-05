@@ -1,40 +1,16 @@
 #include <math.h>
-#include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#include "func_cache.h"
 #include "string_utils.h"
 
-const long FUNC_CACHE_NO_RESULT = -1;
-
-struct FuncCacheObject {
-    unsigned long hash_key;
-    unsigned long result;
-    unsigned long hit_count;
-};
-
-struct FuncCache {
-    struct FuncCacheObject* cache;
-    size_t cache_size;
-};
-
-void func_cache_initialise(struct FuncCache* const func_cache,
-                           const size_t func_cache_size);
-
-void func_cache_free(struct FuncCache* const func_cache);
-
-long func_cache_cached_result(struct FuncCache* const func_cache,
-                              const long parameter_1,
-                              const short parameter_2);
-
-void func_cache_add_result(struct FuncCache* const func_cache,
-                           const long parameter_1,
-                           const short parameter_2,
-                           const long result);
-
 int number_digit_count(long number);
+
+long generate_blink_function_param_cache_key(const long parameter_1,
+                                             const short parameter_2);
 
 long stones_after_blink(long stone_number,
                         short curr_depth,
@@ -48,65 +24,9 @@ long number_digits_half(const long number,
 /* IMPLEMENTATION */
 /* -------------- */
 
-void func_cache_initialise(struct FuncCache* const func_cache,
-                           const size_t func_cache_size) {
-    func_cache->cache = calloc(func_cache_size, sizeof(struct FuncCacheObject));
-    func_cache->cache_size = func_cache_size;
-    for (size_t i = 0; i < func_cache_size; i++) {
-        func_cache->cache[i].hash_key = FUNC_CACHE_NO_RESULT;
-        func_cache->cache[i].result = FUNC_CACHE_NO_RESULT;
-        func_cache->cache[i].hit_count = 0;
-    }
-}
-
-void func_cache_free(struct FuncCache* const func_cache) { free(func_cache->cache); }
-
-long func_cache_cached_result(struct FuncCache* const func_cache,
-                              const long parameter_1,
-                              const short parameter_2) {
-    // printf("Checking cache for %ld %hd --> ", parameter_1, parameter_2);
-    long generated_hash_key =
-        (unsigned long)(parameter_1 * 100) + (unsigned long)parameter_2;
-    for (size_t i = 0; i < func_cache->cache_size; i++) {
-        if (func_cache->cache[i].hash_key == generated_hash_key) {
-            // printf("Cache hit\n");
-            func_cache->cache[i].hit_count++;
-            return func_cache->cache[i].result;
-        }
-    }
-
-    // printf("Cache miss\n");
-    return FUNC_CACHE_NO_RESULT;
-}
-
-void func_cache_add_result(struct FuncCache* const func_cache,
-                           const long parameter_1,
-                           const short parameter_2,
-                           const long result) {
-    long generated_hash_key = (parameter_1 * 100) + (long)parameter_2;
-    bool result_added = false;
-
-    for (size_t i = 0; i < func_cache->cache_size; i++) {
-        if (func_cache->cache[i].hash_key == generated_hash_key)
-            continue;
-        else if (func_cache->cache[i].result == FUNC_CACHE_NO_RESULT) {
-            func_cache->cache[i].hash_key = generated_hash_key;
-            func_cache->cache[i].result = result;
-            result_added = true;
-            break;
-        }
-    }
-    //
-    //    if (result_added) return;
-    //
-    //    for (size_t i = 0; i < func_cache->cache_size; i++) {
-    //        if (func_cache->cache[i].hit_count == 0) {
-    //            func_cache->cache[i].hash_key = generated_hash_key;
-    //            func_cache->cache[i].result = result;
-    //            func_cache->cache[i].hit_count = 0;
-    //            break;
-    //        }
-    //    }
+long generate_blink_function_param_cache_key(const long parameter_1,
+                                             const short parameter_2) {
+    return (parameter_1 * 100) + (long)parameter_2;
 }
 
 int number_digit_count(const long number) {
@@ -130,18 +50,16 @@ long number_digits_half(const long number,
 long stones_after_blink(const long stone_number,
                         const short curr_depth,
                         struct FuncCache* const func_cache) {
-    // printf("I'm here %ld %hd\n", stone_number, curr_depth);
     if (curr_depth == 0) return 1;
 
-    long cached_result = func_cache_cached_result(func_cache, stone_number, curr_depth);
-    bool func_cache_has_result = cached_result != FUNC_CACHE_NO_RESULT;
-    if (func_cache_has_result) {
-        // printf("Cache hit\n");
-        return cached_result;
-    }
+    const long cache_key =
+        generate_blink_function_param_cache_key(stone_number, curr_depth);
+    const long cached_result = func_cache_cached_result(func_cache, cache_key);
+    const bool func_cache_has_result = cached_result != FUNC_CACHE_NO_RESULT;
+    if (func_cache_has_result) return cached_result;
 
     long nstones = 0;
-    int number_ndigits = number_digit_count(stone_number);
+    const int number_ndigits = number_digit_count(stone_number);
 
     if (stone_number == 0)
         nstones += stones_after_blink(1, curr_depth - 1, func_cache);
@@ -157,8 +75,7 @@ long stones_after_blink(const long stone_number,
     } else
         nstones += stones_after_blink(stone_number * 2024, curr_depth - 1, func_cache);
 
-    if (!func_cache_has_result)
-        func_cache_add_result(func_cache, stone_number, curr_depth, nstones);
+    if (!func_cache_has_result) func_cache_add_result(func_cache, cache_key, nstones);
 
     return nstones;
 }
@@ -181,20 +98,20 @@ int main(void) {
     string_list_to_num_list(num_list, line_splits, nsplits, max_split_len);
 
     // Compute
-    const short BLINKS = 25;
-    const size_t BLINK_FUNC_CACHE_SIZE = 1000;
-    struct FuncCache blink_func_cache;
-    func_cache_initialise(&blink_func_cache, BLINK_FUNC_CACHE_SIZE);
+    const short BLINKS = 75;
+    struct FuncCache* blink_func_cache;
+    func_cache_initialise(&blink_func_cache);
 
     long total_stones = 0;
     for (size_t i = 0; i < nsplits; i++) {
-        total_stones += stones_after_blink(num_list[i], BLINKS, &blink_func_cache);
+        total_stones += stones_after_blink(num_list[i], BLINKS, blink_func_cache);
     }
 
     printf(
         "The total number of stones after %hd blinks is %ld\n", BLINKS, total_stones);
 
-    func_cache_free(&blink_func_cache);
+    func_cache_free(blink_func_cache);
+    free(num_list);
     free(line_splits);
     free(line);
     fclose(input_file);
