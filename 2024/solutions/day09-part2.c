@@ -102,7 +102,7 @@ void disk_print(const short* const disk, const size_t nblocks) {
 }
 
 int main(void) {
-    FILE* input_file = fopen("./input/day09.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
 
     const size_t MAX_LINE_LEN = 20001;
     char* const line = malloc(sizeof(char) * MAX_LINE_LEN);

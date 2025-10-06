@@ -91,7 +91,7 @@ void free_num_list(long** num_list, const size_t size) {
 
 int main(void) {
     int safe_level_count = 0;
-    FILE* input_file = fopen("./input/day02.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
 
     if (input_file == NULL) {
         perror("Error reading input file");

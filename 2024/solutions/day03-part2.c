@@ -69,7 +69,7 @@ int string_offsets_in_line(regoff_t* offsets, const char* line, const char* stri
 }
 
 int main(void) {
-    FILE* input_file = fopen("./input/day03.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
     long total = 0;
 
     bool is_counted = true;

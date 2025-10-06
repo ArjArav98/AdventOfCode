@@ -159,7 +159,7 @@ void page_update_list_print(const long* const num_list, const size_t size) {
 }
 
 int main(void) {
-    FILE* const input_file = fopen("./input/day05.txt", "r");
+    FILE* const input_file = fopen("./input.txt", "r");
 
     const int MAX_RULES = 1176;
     struct Rule* const rules = malloc(sizeof(struct Rule) * MAX_RULES);

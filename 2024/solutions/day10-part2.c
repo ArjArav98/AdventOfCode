@@ -83,7 +83,7 @@ visit_count_map_count_9s_visits(const unsigned long* const visit_count_map,
 }
 
 int main(void) {
-    FILE* input_file = fopen("./input/day10.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
 
     const size_t SQUARE_MAP_LENGTH = 45;
     short* const map = calloc(SQUARE_MAP_LENGTH * SQUARE_MAP_LENGTH, sizeof(short));

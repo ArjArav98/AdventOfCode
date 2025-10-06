@@ -175,7 +175,7 @@ int main(void) {
     char* const puzzle_grid = malloc(sizeof(char) * ROWS * (COLUMNS + 1));
     int total_xmas = 0;
 
-    FILE* input_file = fopen("./input/day04.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
 
     for (int row_index=0; row_index < ROWS; row_index++) {
         char* const line = malloc(sizeof(char) * (COLUMNS + 2));

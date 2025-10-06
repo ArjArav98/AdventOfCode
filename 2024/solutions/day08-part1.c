@@ -121,7 +121,7 @@ int antinode_map_antinode_count(const char* const antinode_map,
 }
 
 int main(void) {
-    FILE* const input_file = fopen("./input/day08.txt", "r");
+    FILE* const input_file = fopen("./input.txt", "r");
 
     const size_t SQUARE_MAP_LENGTH = 50, LINE_LEN = SQUARE_MAP_LENGTH + 2;
     char* const antenna_map =

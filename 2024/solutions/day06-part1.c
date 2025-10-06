@@ -114,7 +114,7 @@ void map_print(const unsigned short* const map, const int square_map_length,
 }
 
 int main(void) {
-    FILE* const input_file = fopen("./input/day06.txt", "r");
+    FILE* const input_file = fopen("./input.txt", "r");
 
     const int SQUARE_MAP_LENGTH = 130;
     unsigned short* const map =

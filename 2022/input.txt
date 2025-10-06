@@ -1,0 +1,3 @@
+To view the input for any of these puzzles, please visit the puzzle pages
+on https://adventofcode.com/2022. As per the AoC guidelines, it is suggested
+to not post input or questions in code repositories.

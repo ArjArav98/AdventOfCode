@@ -81,7 +81,7 @@ long stones_after_blink(const long stone_number,
 }
 
 int main(void) {
-    FILE* input_file = fopen("./input/day11.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
 
     const size_t MAX_LINE_LEN = 100;
     char* const line = malloc(sizeof(char) * MAX_LINE_LEN);

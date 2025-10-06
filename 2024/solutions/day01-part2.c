@@ -20,7 +20,7 @@ int main(void) {
 
     long similarity_score = 0;
 
-    FILE *input_file = fopen("./input/day01.txt", "r");
+    FILE *input_file = fopen("./input.txt", "r");
 
     for (; true; lines_read++) {
         int line_char_num = 15;

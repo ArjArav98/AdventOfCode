@@ -83,7 +83,7 @@ void num_list_print(const long* const numbers, size_t size) {
 }
 
 int main(void) {
-    FILE* const input_file = fopen("./input/day07.txt", "r");
+    FILE* const input_file = fopen("./input.txt", "r");
     long sum_of_valid_expression_first_element = 0;
 
     while (true) {

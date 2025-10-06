@@ -38,7 +38,7 @@ int number_pairs_parse_from_line(struct NumberPair* pairs, const char* line) {
 }
 
 int main(void) {
-    FILE* input_file = fopen("./input/day03.txt", "r");
+    FILE* input_file = fopen("./input.txt", "r");
     long total = 0;
 
     while(true) {
