@@ -1,0 +1,9 @@
+---
+IndentWidth: 4
+ColumnLimit: 88
+IndentCaseLabels: true
+AllowShortIfStatementsOnASingleLine: true
+PointerAlignment: "Left"
+AlignAfterOpenBracket: "Align"
+BinPackParameters: false
+BinPackArguments: false
