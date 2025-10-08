@@ -8,7 +8,7 @@ struct Coord {
     unsigned long col;
 };
 
-enum Direction { UP, DOWN, RIGHT, LEFT };
+enum Direction { UP = 1, DOWN = 2, RIGHT = 3, LEFT = 4 };
 
 unsigned long coord_map_index(const struct Coord coord, const size_t square_map_length);
 
@@ -19,10 +19,11 @@ bool coord_on_map_boundary(const struct Coord coord, const size_t square_map_len
 
 enum Direction direction_after_turning_right(enum Direction direction);
 
-void map_move_guard_and_fill_visited_locations(const char* const map,
-                                               bool* const visited_map,
-                                               const size_t square_map_length,
-                                               const struct Coord guard_initial);
+bool map_guard_visits_any_location_twice_in_same_direction(
+    const char* const map,
+    enum Direction* const visited_map,
+    const size_t square_map_length,
+    const struct Coord guard_initial);
 
 /* -------------- */
 /* IMPLEMENTATION */
@@ -62,14 +63,17 @@ enum Direction direction_after_turning_right(enum Direction direction) {
         return UP;
 }
 
-void map_move_guard_and_fill_visited_locations(const char* const map,
-                                               bool* const visited_map,
-                                               const size_t square_map_length,
-                                               const struct Coord guard_initial) {
+bool map_guard_visits_any_location_twice_in_same_direction(
+    const char* const map,
+    enum Direction* const visited_map,
+    const size_t square_map_length,
+    const struct Coord guard_initial) {
     struct Coord guard_location = guard_initial;
     enum Direction guard_direction = UP;
     while (true) {
-        visited_map[coord_map_index(guard_location, square_map_length)] = true;
+        if (visited_map[coord_map_index(guard_location, square_map_length)] ==
+            guard_direction)
+            return true;
 
         if (coord_on_map_boundary(guard_location, square_map_length)) break;
 
@@ -80,8 +84,12 @@ void map_move_guard_and_fill_visited_locations(const char* const map,
             continue;
         }
 
+        visited_map[coord_map_index(guard_location, square_map_length)] =
+            guard_direction;
         guard_location = ahead;
     }
+
+    return false;
 }
 
 int main(void) {
@@ -89,9 +97,8 @@ int main(void) {
 
     const size_t SQUARE_MAP_LENGTH = 130;
     char* const map = malloc(SQUARE_MAP_LENGTH * SQUARE_MAP_LENGTH * sizeof *map);
-    bool* const visited_map =
-        calloc(SQUARE_MAP_LENGTH * SQUARE_MAP_LENGTH, sizeof *visited_map);
     struct Coord initial_guard_location = {.row = 0, .col = 0};
+    unsigned long infinite_loop_obstacle_locations = 0;
 
     for (size_t rows_allocated = 0; true; rows_allocated++) {
         const size_t LINE_LEN = SQUARE_MAP_LENGTH + 2;
@@ -112,19 +119,30 @@ int main(void) {
         free(line);
     }
 
-    map_move_guard_and_fill_visited_locations(
-        map, visited_map, SQUARE_MAP_LENGTH, initial_guard_location);
-
-    unsigned long visited_locations = 0;
     for (size_t i = 0; i < SQUARE_MAP_LENGTH; i++) {
         for (size_t j = 0; j < SQUARE_MAP_LENGTH; j++) {
-            if (visited_map[i * SQUARE_MAP_LENGTH + j]) visited_locations++;
+            if (map[i * SQUARE_MAP_LENGTH + j] == '#') continue;
+
+            enum Direction* const visited_map =
+                calloc(SQUARE_MAP_LENGTH * SQUARE_MAP_LENGTH, sizeof *visited_map);
+
+            map[i * SQUARE_MAP_LENGTH + j] = '#';
+
+            const bool is_inf_loop =
+                map_guard_visits_any_location_twice_in_same_direction(
+                    map, visited_map, SQUARE_MAP_LENGTH, initial_guard_location);
+            if (is_inf_loop) infinite_loop_obstacle_locations++;
+
+            map[i * SQUARE_MAP_LENGTH + j] = '.';
+
+            free(visited_map);
         }
     }
 
-    printf("The number of unique visited locations is %lu.\n", visited_locations);
+    printf("The number of locations where placing an obstacle will cause an infinite "
+           "loop is %lu.\n",
+           infinite_loop_obstacle_locations);
 
-    free(visited_map);
     free(map);
     fclose(input_file);
     return EXIT_SUCCESS;
