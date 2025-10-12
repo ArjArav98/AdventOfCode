@@ -1,126 +1,93 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include<string.h>
-#include<regex.h>
+#include <regex.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-struct NumberPair;
-int number_pairs_parse_from_line(struct NumberPair* pairs, const char* line);
-int string_offsets_in_line(regoff_t* offsets, const char* line, const char* string);
+unsigned long
+line_calculate_sum_of_number_pair_products(const char* const line,
+                                           bool* const count_current_product);
 
-struct NumberPair {
-    long first_num;
-    long second_num;
-    regoff_t input_line_offset;
-};
+/* -------------- */
+/* IMPLEMENTATION */
+/* -------------- */
 
-int number_pairs_parse_from_line(struct NumberPair* pairs, const char* line) {
-    const int SUBEXP_COUNT = 3;
-    regex_t regexp;
-    regmatch_t matches[SUBEXP_COUNT];
-    const char* pattern = "mul(\\([[:digit:]]\\{1,3\\}\\),\\([[:digit:]]\\{1,3\\}\\))";
-    
-    if(regcomp(&regexp, pattern, 0) != 0) {
-        fprintf(stderr, "Could not compile regular expression");
-        regfree(&regexp);
+unsigned long
+line_calculate_sum_of_number_pair_products(const char* const line,
+                                           bool* const count_current_product) {
+    regex_t num_mul_regexp, do_regexp, dont_regexp;
+    regmatch_t num_mul_matches[3], do_matches[1], dont_matches[1];
+    unsigned long product_sum = 0;
+
+    if (regcomp(&num_mul_regexp,
+                "mul(\\([[:digit:]]\\{1,3\\}\\),\\([[:digit:]]\\{1,3\\}\\))",
+                0) != 0) {
+        return 0;
+    }
+    if (regcomp(&do_regexp, "do()", 0) != 0) {
+        regfree(&num_mul_regexp);
+        return 0;
+    }
+    if (regcomp(&dont_regexp, "don't()", 0) != 0) {
+        regfree(&num_mul_regexp);
+        regfree(&do_regexp);
         return 0;
     }
 
-    regoff_t last_offset = 0;
-    const char* search_text = line;
-    int pairs_parsed = 0;
-    while(regexec(&regexp, search_text, SUBEXP_COUNT, matches, 0) == 0) {
-        pairs[pairs_parsed].first_num = strtol(search_text + matches[1].rm_so, NULL, 10);
-        pairs[pairs_parsed].second_num = strtol(search_text + matches[2].rm_so, NULL, 10);
-        pairs[pairs_parsed].input_line_offset = last_offset + matches[0].rm_so;
+    const char* line_copy = line;
+    while (regexec(&num_mul_regexp, line_copy, 3, num_mul_matches, 0) == 0) {
+        const unsigned long number1 =
+            strtol(line_copy + num_mul_matches[1].rm_so, NULL, 10);
+        const unsigned long number2 =
+            strtol(line_copy + num_mul_matches[2].rm_so, NULL, 10);
 
-        search_text += matches[0].rm_eo;
-        last_offset += matches[0].rm_eo;
-        pairs_parsed++;
+        const bool dont_regexp_found =
+            (regexec(&dont_regexp, line_copy, 1, dont_matches, 0) == 0) &&
+            (dont_matches[0].rm_so < num_mul_matches[0].rm_so);
+        const bool do_regexp_found =
+            (regexec(&do_regexp, line_copy, 1, do_matches, 0) == 0) &&
+            (do_matches[0].rm_so < num_mul_matches[0].rm_so);
+
+        const regoff_t dont_start_offset = dont_matches[0].rm_so;
+        const regoff_t do_start_offset = do_matches[0].rm_so;
+
+        if (dont_regexp_found && do_regexp_found)
+            *count_current_product = do_start_offset > dont_start_offset;
+        else if (dont_regexp_found)
+            *count_current_product = false;
+        else if (do_regexp_found)
+            *count_current_product = true;
+
+        if (*count_current_product == true) product_sum += (number1 * number2);
+        line_copy += num_mul_matches[0].rm_eo;
     }
 
-    regfree(&regexp);
-    return pairs_parsed;
-}
-
-int string_offsets_in_line(regoff_t* offsets, const char* line, const char* string) {
-    regex_t regexp;
-    regmatch_t matches[1];
-    
-    if(regcomp(&regexp, string, 0) != 0) {
-        fprintf(stderr, "Could not compile regular expression");
-        regfree(&regexp);
-        return 0;
-    }
-
-    const char* search_text = line;
-    regoff_t last_offset = 0;
-    int string_occurrences = 0;
-    while(regexec(&regexp, search_text, 1, matches, 0) == 0) {
-        offsets[string_occurrences] = last_offset + matches[0].rm_so;
-
-        string_occurrences++;
-        search_text += matches[0].rm_eo;
-        last_offset += matches[0].rm_eo;
-    }
-
-    regfree(&regexp);
-    return string_occurrences;
+    regfree(&num_mul_regexp);
+    regfree(&do_regexp);
+    regfree(&dont_regexp);
+    return product_sum;
 }
 
 int main(void) {
     FILE* input_file = fopen("./input.txt", "r");
-    long total = 0;
+    unsigned long product_sum = 0;
+    bool count_product_in_sum = true;
 
-    bool is_counted = true;
-    while(true) {
-        const int MAX_LINE_LEN = 4000;
-        const int MAX_PAIRS_PER_LINE = 500;
-        const int MAX_DO_DONTS_PER_LINE = 600;
-        char* line = malloc(sizeof(char)*(MAX_LINE_LEN+1));
-        fgets(line, MAX_LINE_LEN, input_file);
+    while (true) {
+        const size_t LINE_LEN = 3100;
+        char* const line = malloc(LINE_LEN * sizeof *line);
+        fgets(line, LINE_LEN, input_file);
 
-        if (feof(input_file) != 0) {
+        if (feof(input_file) != false) {
             free(line);
             break;
         }
 
-        regoff_t* do_offsets_in_line = malloc(sizeof(regoff_t) * MAX_DO_DONTS_PER_LINE);
-        regoff_t* dont_offsets_in_line = malloc(sizeof(regoff_t) * MAX_DO_DONTS_PER_LINE);
-        const int do_count = string_offsets_in_line(do_offsets_in_line, line, "do()");
-        const int dont_count = string_offsets_in_line(dont_offsets_in_line, line, "don't()");
-
-        struct NumberPair* pairs = malloc(sizeof(struct NumberPair) * MAX_PAIRS_PER_LINE);
-        const int parsed_pairs = number_pairs_parse_from_line(pairs, line);
-
-        for (
-            size_t line_index=0, do_index=0, dont_index=0, pair_index=0;
-            line_index < strlen(line);
-            line_index++
-        ) {
-            if ((do_index < do_count) && (do_offsets_in_line[do_index] == line_index)) {
-                is_counted = true;
-                do_index++;
-            }
-            if ((dont_index < dont_count) && (dont_offsets_in_line[dont_index] == line_index)) {
-                is_counted = false;
-                dont_index++;
-            }
-            if ((pair_index < parsed_pairs) && (pairs[pair_index].input_line_offset == line_index)) {
-                if (is_counted) {
-                    total += pairs[pair_index].first_num * pairs[pair_index].second_num;
-                }
-                pair_index++;
-            }
-        }
-       
-        free(do_offsets_in_line);
-        free(dont_offsets_in_line);
-        free(pairs);
+        product_sum +=
+            line_calculate_sum_of_number_pair_products(line, &count_product_in_sum);
         free(line);
     }
 
-    printf("Product is %ld\n", total);
+    printf("Product is %lu\n", product_sum);
 
     fclose(input_file);
     return EXIT_SUCCESS;

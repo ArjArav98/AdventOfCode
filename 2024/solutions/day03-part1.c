@@ -1,69 +1,57 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include<regex.h>
+#include <regex.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-struct NumberPair;
-int number_pairs_parse_from_line(struct NumberPair* pairs, const char* line);
+unsigned long line_calculate_sum_of_number_pair_products(const char* const line);
 
-struct NumberPair {
-    long first_num;
-    long second_num;
-};
+/* -------------- */
+/* IMPLEMENTATION */
+/* -------------- */
 
-int number_pairs_parse_from_line(struct NumberPair* pairs, const char* line) {
-    const int SUBEXP_COUNT = 3;
+unsigned long line_calculate_sum_of_number_pair_products(const char* const line) {
     regex_t regexp;
-    regmatch_t matches[SUBEXP_COUNT];
-    const char* pattern = "mul(\\([[:digit:]]\\{1,3\\}\\),\\([[:digit:]]\\{1,3\\}\\))";
-    
-    if(regcomp(&regexp, pattern, 0) != 0) {
-        fprintf(stderr, "Could not compile regular expression");
-        regfree(&regexp);
+    regmatch_t matches[3];
+    unsigned long product_sum = 0;
+
+    if (regcomp(&regexp,
+                "mul(\\([[:digit:]]\\{1,3\\}\\),\\([[:digit:]]\\{1,3\\}\\))",
+                0) != 0) {
         return 0;
     }
 
-    const char* search_text = line;
-    int pairs_parsed = 0;
-    while(regexec(&regexp, search_text, SUBEXP_COUNT, matches, 0) == 0) {
-        pairs[pairs_parsed].first_num = strtol(search_text + matches[1].rm_so, NULL, 10);
-        pairs[pairs_parsed].second_num = strtol(search_text + matches[2].rm_so, NULL, 10);
+    const char* line_copy = line;
+    while (regexec(&regexp, line_copy, 3, matches, 0) == 0) {
+        const unsigned long number1 = strtol(line_copy + matches[1].rm_so, NULL, 10);
+        const unsigned long number2 = strtol(line_copy + matches[2].rm_so, NULL, 10);
 
-        search_text += matches[0].rm_eo;
-        pairs_parsed++;
+        product_sum += (number1 * number2);
+        line_copy += matches[0].rm_eo;
     }
 
     regfree(&regexp);
-    return pairs_parsed;
+    return product_sum;
 }
 
 int main(void) {
     FILE* input_file = fopen("./input.txt", "r");
-    long total = 0;
+    unsigned long product_sum = 0;
 
-    while(true) {
-        const int MAX_LINE_LEN = 4000;
-        const int MAX_PAIRS_PER_LINE = 500;
-        char* line = malloc(sizeof(char)*(MAX_LINE_LEN+1));
-        fgets(line, MAX_LINE_LEN, input_file);
+    while (true) {
+        const size_t LINE_LEN = 3100;
+        char* const line = malloc(LINE_LEN * sizeof *line);
+        fgets(line, LINE_LEN, input_file);
 
-        if (feof(input_file) != 0) {
+        if (feof(input_file) != false) {
             free(line);
             break;
         }
 
-        struct NumberPair* pairs = malloc(sizeof(struct NumberPair) * MAX_PAIRS_PER_LINE);
-        const int parsed_pairs = number_pairs_parse_from_line(pairs, line);
-
-        for (int index=0; index < parsed_pairs; index++) {
-            total += pairs[index].first_num * pairs[index].second_num;
-        }
-       
-        free(pairs);
+        product_sum += line_calculate_sum_of_number_pair_products(line);
         free(line);
     }
 
-    printf("Product is %ld\n", total);
+    printf("Product is %lu\n", product_sum);
 
     fclose(input_file);
     return EXIT_SUCCESS;
