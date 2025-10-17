@@ -1,274 +1,133 @@
-#include<stdlib.h>
-#include<stdio.h>
-#include<stdbool.h>
-#include<string.h>
-#include"string_utils.h"
+#include "binary_tree.h"
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
+void num_list_from_line(short* const num_list, const char* const line);
+bool num_list_is_ordered(const short* const num_list,
+                         const size_t nnums,
+                         const struct BinaryTreeNode num_rule_trees[100]);
+bool num_list_n_elements_are_present_in_num_rule_tree(
+    const short* const num_list,
+    const size_t nnums,
+    const struct BinaryTreeNode num_rule_tree,
+    const unsigned long n);
 
-struct Rule;
-struct Rule rule_parse_from_line(char* const line);
-void rules_print(struct Rule* const rules, int nrules);
-void ordered_page_numbers_add_number(
-    long* const ordered_page_numbers,
-    const size_t size,
-    const long number
-);
-void ordered_page_numbers_update_order_for_rule(
-    long* const ordered_page_numbers,
-    const size_t size,
-    const struct Rule rule
-);
-void ordered_page_numbers_print(
-    const long* const ordered_page_numbers,
-    const size_t size
-);
-size_t ordered_page_numbers_get_true_size(
-    long* const ordered_page_numbers,
-    size_t size
-);
-int line_to_page_update_list(
-    long* num_list,
-    size_t num_list_size,
-    const char* const line
-);
-bool page_list_contains_rule_numbers(
-    const long* const num_list,
-    const size_t size,
-    struct Rule rule
-);
-void page_update_list_print(const long* const num_list, const size_t size);
+void num_list_from_line(short* const num_list, const char* const line) {
+    const size_t nnums = (strlen(line) + 1) / 3;
+    char* end_of_number = NULL;
 
+    num_list[0] = (short)strtol(line, &end_of_number, 10);
 
-struct Rule {
-    int before_num;
-    int after_num;
-};
-
-struct Rule rule_parse_from_line(char* const line) {
-    struct Rule rule = { .before_num = 0, .after_num = 0 };
-    sscanf(line, "%d|%d", &rule.before_num, &rule.after_num);
-    return rule;
-}
-
-void rules_print(struct Rule* const rules, int nrules) {
-    for (int i=0; i<nrules; i++)
-        printf("%d|%d\n", rules[i].before_num, rules[i].after_num);
-}
-
-void ordered_page_numbers_add_number(
-    long* const ordered_page_numbers,
-    const size_t size,
-    const long number
-) {
-    for (int index=0; index < size; index++) {
-        if (ordered_page_numbers[index] == number) break;
-        else if (ordered_page_numbers[index] == 0) {
-            ordered_page_numbers[index] = number;
-            break;
-        }
+    for (size_t i = 1; i < nnums; i++) {
+        num_list[i] = (short)strtol(end_of_number + 1, &end_of_number, 10);
     }
 }
 
-void ordered_page_numbers_update_order_for_rule(
-    long* const ordered_page_numbers,
-    const size_t size,
-    const struct Rule rule
-) {
-    int before_num_index = 0, after_num_index = 0;
+bool num_list_is_ordered(const short* const num_list,
+                         const size_t nnums,
+                         const struct BinaryTreeNode num_rule_trees[100]) {
 
-    for (int index=0; index < size; index++) {
-        if (ordered_page_numbers[index] == rule.before_num) before_num_index = index;
-        if (ordered_page_numbers[index] == rule.after_num) after_num_index = index;
+    for (size_t i = 0; i < nnums; i++)
+        for (size_t j = i + 1; j < nnums; j++)
+            if (!binary_tree_value_exists(&num_rule_trees[num_list[i]], num_list[j]))
+                return false;
+
+    return true;
+}
+
+bool num_list_n_elements_are_present_in_num_rule_tree(
+    const short* const num_list,
+    const size_t nnums,
+    const struct BinaryTreeNode num_rule_tree,
+    const unsigned long n) {
+
+    unsigned long num_list_elements_in_num_rule_tree = 0;
+    for (size_t i = 0; i < nnums; i++) {
+        if (binary_tree_value_exists(&num_rule_tree, num_list[i]))
+            num_list_elements_in_num_rule_tree++;
     }
 
-    if (before_num_index < after_num_index) return;
-
-    for (int index=size-1; index >=0; index--) {
-        const bool index_contains_nothing = ordered_page_numbers[index] == 0;
-        const bool index_before_before_num_index = (index < before_num_index);
-
-        if (index_contains_nothing) continue;
-        if (index_before_before_num_index)
-            ordered_page_numbers[index+1] = ordered_page_numbers[index];
-        if (index == after_num_index) {
-            ordered_page_numbers[index] = rule.before_num;
-            break;
-        }
-    }
-}
-
-void ordered_page_numbers_print(
-    const long* const ordered_page_numbers,
-    const size_t size
-) {
-    for (int i=0; (i<size) && (ordered_page_numbers[i] != 0); i++)
-        printf("%ld ", ordered_page_numbers[i]);
-    printf("\n");
-}
-
-size_t ordered_page_numbers_get_true_size(
-    long* const ordered_page_numbers,
-    size_t size
-) {
-    size_t true_size = 0;
-    for (int i=0; i<size && (ordered_page_numbers[i] != 0); i++) true_size++;
-    return true_size;
-}
-
-int line_to_page_update_list(
-    long* num_list,
-    size_t num_list_size,
-    const char* const line
-) {
-    const size_t string_list_elem_len = strlen(line) + 1;
-    const size_t string_list_size = num_list_size;
-
-    char* const string_list = malloc(
-        sizeof(char) * string_list_size * string_list_elem_len
-    );
-    int nsplits = split_string(
-        string_list,
-        string_list_size,
-        line,
-        ','
-    );
-    string_list_to_num_list(num_list, string_list, nsplits, string_list_elem_len);
-
-    free(string_list);
-    return nsplits;
-}
-
-bool page_list_contains_rule_numbers(
-    const long* const num_list,
-    const size_t size,
-    struct Rule rule
-) {
-    bool before_exists = false, after_exists = false;
-
-    for (int i=0; i<size; i++) {
-        if (num_list[i] == rule.before_num) before_exists = true;
-        if (num_list[i] == rule.after_num) after_exists = true;
-    }
-
-    return before_exists && after_exists;
-}
-
-void page_update_list_print(const long* const num_list, const size_t size) {
-    for (int i=0; i<size; i++) printf("%ld,", num_list[i]);
-    printf("\n");
+    return num_list_elements_in_num_rule_tree == n;
 }
 
 int main(void) {
     FILE* const input_file = fopen("./input.txt", "r");
 
-    const int MAX_RULES = 1176;
-    struct Rule* const rules = malloc(sizeof(struct Rule) * MAX_RULES);
-    
-    long middle_number_sum = 0;
-    int nrules = 0;
+    struct BinaryTreeNode num_rule_trees[100];
+    for (size_t i = 0; i < 100; i++)
+        binary_tree_init(&num_rule_trees[i]);
 
     while (true) {
-        const int MAX_LINE_LEN = 7;
-        char* const line = malloc(sizeof(char) * MAX_LINE_LEN);
-        fgets(line, MAX_LINE_LEN, input_file);
+        const size_t LINE_LEN = 10;
+        char* const line = malloc(LINE_LEN * sizeof *line);
+        fgets(line, LINE_LEN, input_file);
 
         if (strlen(line) == 1) {
             free(line);
             break;
         }
-       
-        rules[nrules] = rule_parse_from_line(line);
-        nrules++;
+
+        char* end_of_number = NULL;
+        const long number1 = strtol(line, &end_of_number, 10);
+        const long number2 = strtol(end_of_number + 1, NULL, 10);
+
+        binary_tree_add(&num_rule_trees[number1], number2);
 
         free(line);
     }
 
+    unsigned long middle_elem_sum = 0;
     while (true) {
-        const int MAX_LINE_LEN = 100;
-        char* const line = malloc(sizeof(char) * MAX_LINE_LEN);
-        fgets(line, MAX_LINE_LEN, input_file);
+        const size_t LINE_LEN = 100;
+        char* const line = malloc(LINE_LEN * sizeof *line);
+        fgets(line, LINE_LEN, input_file);
 
         if (feof(input_file) != false) {
             free(line);
             break;
         }
 
-        // We get the page update list
-        const size_t comma_occurrences = char_occurs_in_string(line, ',');
-        const size_t page_update_list_size = comma_occurrences + 1;
-        long* const page_update_list = calloc(page_update_list_size, sizeof(long));
-        
-        const int page_update_list_elems = line_to_page_update_list(
-            page_update_list,
-            page_update_list_size,
-            line
-        );
-       
-        // We order the page numbers
-        const size_t nnumbers = nrules;
-        long* ordered_page_numbers = calloc(nnumbers, sizeof(long));
+        const size_t nnums = (strlen(line) + 1) / 3;
+        short* const num_list = calloc(nnums, sizeof *num_list);
+        num_list_from_line(num_list, line);
 
-        for (int index=0; index < nrules; index++) {
-            if(
-                page_list_contains_rule_numbers(
-                    page_update_list,
-                    page_update_list_elems,
-                    rules[index]
-                )
-            ) {
-                ordered_page_numbers_add_number(ordered_page_numbers, nnumbers, rules[index].before_num);
-                ordered_page_numbers_add_number(ordered_page_numbers, nnumbers, rules[index].after_num);
-                ordered_page_numbers_update_order_for_rule(ordered_page_numbers, nnumbers, rules[index]);
-            }
-        }
+        /* For any element in this ordered list, the number of other elements
+         * present in its rule list is equal to N - i - 1, where N is the total
+         * number of elements and i is the index of the element itself.
+         *
+         * For eg; 75,47, 61, 53, 29 is an ordered list.
+         * The 0th element has rules present for (5 - 0 - 1) elements, ie, the
+         * elements following it.
+         * Similarly, the middle element should have (N - N/2 - 1) or N/2 elements
+         * matching. */
 
-        for (int index=nrules; index >= 0; index--) {
-            if(
-                page_list_contains_rule_numbers(
-                    page_update_list,
-                    page_update_list_elems,
-                    rules[index]
-                )
-            ) {
-                ordered_page_numbers_add_number(ordered_page_numbers, nnumbers, rules[index].before_num);
-                ordered_page_numbers_add_number(ordered_page_numbers, nnumbers, rules[index].after_num);
-                ordered_page_numbers_update_order_for_rule(ordered_page_numbers, nnumbers, rules[index]);
-            }
-        }
+        if (!num_list_is_ordered(num_list, nnums, num_rule_trees)) {
+            const unsigned long middle_elem = nnums / 2,
+                                nmatching_elements = middle_elem;
 
-        // We determine which page updates are NOT CORRECTLY ORDERED
-        // by checking if both arrays are inequal
-        // If they are NOT EQUAL, we need the middle element of the correctly
-        // ordered list WHICH WE ALREADY HAVE - the ordered_page_numbers array.
-        size_t ordered_page_numbers_true_size = ordered_page_numbers_get_true_size(
-            ordered_page_numbers,
-            nnumbers
-        );
-        if (page_update_list_elems == ordered_page_numbers_true_size) {
-            const size_t common_size = ordered_page_numbers_true_size;
-            bool is_equal = true;
-
-            for (int index=0; index < common_size; index++) {
-                if (page_update_list[index] != ordered_page_numbers[index]) {
-                    is_equal = false;
+            for (size_t i = 0; i < nnums; i++) {
+                if (num_list_n_elements_are_present_in_num_rule_tree(
+                        num_list,
+                        nnums,
+                        num_rule_trees[num_list[i]],
+                        nmatching_elements)) {
+                    middle_elem_sum += (unsigned long)num_list[i];
                     break;
                 }
             }
-
-            if (is_equal == false) {
-                const size_t middle_element = (ordered_page_numbers_true_size/ 2);
-                middle_number_sum += ordered_page_numbers[middle_element];
-            }
         }
 
-        free(ordered_page_numbers);
-        free(page_update_list);
+        free(num_list);
         free(line);
     }
 
-    printf("The sum of middle elements of lists with correct order is %ld\n", middle_number_sum);
+    printf("The sum of middle elements of correctly-ordered lists is %ld.\n",
+           middle_elem_sum);
 
-    free(rules);
+    for (size_t i = 0; i < 100; i++)
+        binary_tree_free(&num_rule_trees[i]);
     fclose(input_file);
     return EXIT_SUCCESS;
 }
