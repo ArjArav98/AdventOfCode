@@ -2,7 +2,7 @@
 IndentWidth: 4
 ColumnLimit: 88
 IndentCaseLabels: true
-AllowShortIfStatementsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: "AllIfsAndElse"
 PointerAlignment: "Left"
 AlignAfterOpenBracket: "Align"
 BinPackParameters: false
