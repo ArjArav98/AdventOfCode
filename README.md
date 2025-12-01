@@ -7,4 +7,6 @@ A collection of answers to all the programming questions for Advent of Code over
 
 2024 - C
 
+2025 - C
+
 [To attempt the questions yourself, you can visit this year's 'Advent of Code' website.](https://adventofcode.com)
