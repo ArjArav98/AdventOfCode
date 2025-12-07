@@ -35,7 +35,6 @@ long generate_repeated_digit_number(const long number, const long repeats) {
 }
 
 long sum_of_repeated_digit_numbers(const long range_start, const long range_end) {
-    // const long range_start_ndigits = number_of_digits(range_start);
     const long range_end_ndigits = number_of_digits(range_end);
 
     long sum_of_repeated_digit_numbers = 0;

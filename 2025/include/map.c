@@ -6,6 +6,14 @@
 /* PRIVATE PROTOTYPES */
 /*--------------------*/
 
+struct MapNode;
+static void map_node_free(struct MapNode* const node);
+static void map_node_print(const struct MapNode* const node);
+
+/*------------------------*/
+/* PRIVATE IMPLEMENTATION */
+/*------------------------*/
+
 struct MapNode {
     long long key;
     long long value;
@@ -14,17 +22,31 @@ struct MapNode {
     struct MapNode* right;
 };
 
-void map_node_free(struct MapNode* const node);
-void map_node_print(const struct MapNode* const node);
-
-/*----------------*/
-/* IMPLEMENTATION */
-/*----------------*/
-
 struct Map {
     struct MapNode* root;
     long long no_result_value;
 };
+
+static void map_node_free(struct MapNode* const node) {
+    if (node == NULL) return;
+
+    map_node_free(node->left);
+    map_node_free(node->right);
+
+    free(node);
+}
+
+static void map_node_print(const struct MapNode* const node) {
+    if (node == NULL) return;
+
+    map_node_print(node->left);
+    printf("[%lld] ", node->value);
+    map_node_print(node->right);
+}
+
+/*-----------------------*/
+/* PUBLIC IMPLEMENTATION */
+/*-----------------------*/
 
 struct Map* map_create(const long long no_result_value) {
     struct Map* map = malloc(sizeof(struct Map));
@@ -75,26 +97,9 @@ long long map_get(const struct Map* const map, const long long key) {
     return map->no_result_value;
 }
 
-void map_node_free(struct MapNode* const node) {
-    if (node == NULL) return;
-
-    map_node_free(node->left);
-    map_node_free(node->right);
-
-    free(node);
-}
-
 void map_free(struct Map* map) {
     map_node_free(map->root);
     free(map);
-}
-
-void map_node_print(const struct MapNode* const node) {
-    if (node == NULL) return;
-
-    map_node_print(node->left);
-    printf("[%lld] ", node->value);
-    map_node_print(node->right);
 }
 
 void map_print(const struct Map* const map) {

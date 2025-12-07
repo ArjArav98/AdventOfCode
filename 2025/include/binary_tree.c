@@ -9,16 +9,15 @@
 
 struct BinaryTreeNode;
 
-void binary_tree_node_free(struct BinaryTreeNode* const node);
-void binary_tree_node_print(const struct BinaryTreeNode* const node);
-bool binary_tree_node_is_leaf(const struct BinaryTreeNode* tree_node);
-void binary_tree_node_insert(struct BinaryTreeNode* const root_node,
+static void binary_tree_node_free(struct BinaryTreeNode* const node);
+static void binary_tree_node_print(const struct BinaryTreeNode* const node);
+static void binary_tree_node_insert(struct BinaryTreeNode* const root_node,
                              struct BinaryTreeNode* const new_node);
-long long
+static long long
 binary_tree_node_get_closest_key_value(const struct BinaryTree* const tree,
                                        const struct BinaryTreeNode* const tree_node,
                                        const long long key);
-struct BinaryTreeNode* binary_tree_node_delete(struct BinaryTreeNode* tree_node);
+static struct BinaryTreeNode* binary_tree_node_delete(struct BinaryTreeNode* tree_node);
 
 /*------------------------*/
 /* PRIVATE IMPLEMENTATION */
@@ -37,7 +36,7 @@ struct BinaryTree {
     long long no_result_value;
 };
 
-void binary_tree_node_insert(struct BinaryTreeNode* root_node,
+static void binary_tree_node_insert(struct BinaryTreeNode* root_node,
                              struct BinaryTreeNode* const new_node) {
     if (new_node == NULL) return;
 
@@ -53,11 +52,7 @@ void binary_tree_node_insert(struct BinaryTreeNode* root_node,
     }
 }
 
-bool binary_tree_node_is_leaf(const struct BinaryTreeNode* tree_node) {
-    return (tree_node->left == NULL) && (tree_node->right == NULL);
-}
-
-struct BinaryTreeNode* binary_tree_node_delete(struct BinaryTreeNode* delete_node) {
+static struct BinaryTreeNode* binary_tree_node_delete(struct BinaryTreeNode* delete_node) {
     struct BinaryTreeNode* promoted_node = NULL;
 
     if (delete_node->right != NULL) {
@@ -71,7 +66,7 @@ struct BinaryTreeNode* binary_tree_node_delete(struct BinaryTreeNode* delete_nod
     return promoted_node;
 }
 
-long long
+static long long
 binary_tree_node_get_closest_key_value(const struct BinaryTree* const tree,
                                        const struct BinaryTreeNode* const tree_node,
                                        const long long key) {
@@ -94,7 +89,7 @@ binary_tree_node_get_closest_key_value(const struct BinaryTree* const tree,
     } else return tree_node->value;
 }
 
-void binary_tree_node_free(struct BinaryTreeNode* const node) {
+static void binary_tree_node_free(struct BinaryTreeNode* const node) {
     if (node == NULL) return;
 
     binary_tree_node_free(node->left);
@@ -103,7 +98,7 @@ void binary_tree_node_free(struct BinaryTreeNode* const node) {
     free(node);
 }
 
-void binary_tree_node_print(const struct BinaryTreeNode* const node) {
+static void binary_tree_node_print(const struct BinaryTreeNode* const node) {
     if (node == NULL) return;
 
     binary_tree_node_print(node->left);
